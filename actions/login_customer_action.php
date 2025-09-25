@@ -1,6 +1,9 @@
 <?php
-header('Content-Type: application/json');
 session_start();
+
+require_once '../settings/core.php';
+header('Content-Type: application/json');
+// session_start() is already handled by core.php
 
 $response = array();
 
