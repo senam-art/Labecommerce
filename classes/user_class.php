@@ -52,6 +52,7 @@ class User extends db_connection
         if ($result) {
             $this->name = $result['customer_name'];
             $this->email = $result['customer_email'];
+            $this->role = isset($result['user_role']) ? $result['user_role'] : null;
             $this->date_created = isset($result['date_created']) ? $result['date_created'] : null;
             $this->phone_number = $result['customer_contact'];
         }

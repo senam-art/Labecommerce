@@ -1,9 +1,9 @@
 <?php
-session_start();
+
 
 require_once '../settings/core.php';
 header('Content-Type: application/json');
-// session_start() is already handled by core.php
+// session_start() is handled by core.php
 
 $response = array();
 
@@ -44,6 +44,7 @@ try {
 
         $_SESSION['user_id'] = $user['customer_id'];
         $_SESSION['user_name'] = $user['customer_name'];
+        $_SESSION['user_role'] = isset($user['user_role']) ? $user['user_role'] : null;
         
         $response['status'] = 'success';
         $response['message'] = 'Login successful! Redirecting...';

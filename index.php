@@ -1,8 +1,16 @@
 <?php
-session_start(); // start the session
+require_once 'settings/core.php';
 
-// Example: $_SESSION['user'] could store email or user ID after login
-$isLoggedIn = isset($_SESSION['user']);
+
+
+
+
+// Debugging: print all session variables
+echo '<pre>';
+print_r($_SESSION);
+echo '</pre>';
+
+
 ?>
 
 <!DOCTYPE html>
@@ -19,22 +27,26 @@ $isLoggedIn = isset($_SESSION['user']);
         <div class="container-fluid">
             <a class="navbar-brand" href="index.php"></a>
             <div class="d-flex">
-                <?php if (!$isLoggedIn): ?>
-                    <!-- Show Register/Login buttons if not logged in -->
+                <?php if (isLoggedIn()): ?>
+                    <!-- Show user info and Logout button if logged in -->
+                    <a href="actions/logout.php" class="btn btn-danger">Logout</a>
+                <?php else: ?>
+                     <!-- Show Register/Login buttons if not logged in -->
                     <a href="view/register.php" class="btn btn-outline-primary me-2">Register</a>
                     <a href="view/login.php" class="btn btn-primary">Login</a>
-                <?php else: ?>
-                    <!-- Show user info and Logout button if logged in -->
-                    <span class="me-3">Welcome, <?php echo htmlspecialchars($_SESSION['user']); ?></span>
-                    <a href="logout.php" class="btn btn-danger">Logout</a>
                 <?php endif; ?>
+                    
             </div>
         </div>
     </nav>
 
     <div class="container mt-5">
+    <?php if (isLoggedIn()): ?> 
+        <h1>Welcome <?php echo htmlspecialchars(getUserName()); ?>, to the Great Homepage</h1>
+    <?php else: ?>
         <h1>Welcome to the Great HomePage</h1>
-        <p>This is the home page.</p>
-    </div>
+    <?php endif; ?>
+    <p>This is the home page.</p>
+</div>
 </body>
 </html>

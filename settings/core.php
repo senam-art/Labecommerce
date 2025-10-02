@@ -14,13 +14,18 @@ ob_start();
  * Returns true if a session user exists, false otherwise
  */
 function isLoggedIn() {
-    return isset($_SESSION['user']);
+    return $isLoggedIn = isset($_SESSION['user_name']);
 }
 
 
+function getUserName() {
+    return isset($_SESSION['user_name']) ? $_SESSION['user_name'] : null;
+}
 
 //function to get user ID
-
+function getUserId() {
+    return isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
+}
 
 //function to check for role (admin, customer, etc)
 /**

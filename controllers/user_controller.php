@@ -1,5 +1,5 @@
 <?php
-session_start(); 
+require_once '../settings/core.php';
 
 require_once '../classes/user_class.php';
 
