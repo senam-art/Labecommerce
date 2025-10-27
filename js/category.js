@@ -1,7 +1,7 @@
 $(document).ready(function() {
     function loadCategories() {
         $.ajax({
-            url: 'actions/fetch_category_action.php',
+            url: '../../actions/fetch_category_action.php',
             type: 'GET',
             dataType: 'json',
             success: function(response) {
