@@ -1,9 +1,9 @@
 <?php
+require_once __DIR__ . '/../settings/core.php';
+require_once PROJECT_ROOT . '/controllers/user_controller.php';
 
-
-require_once '../settings/core.php';
 header('Content-Type: application/json');
-// session_start() is handled by core.php
+
 
 $response = array();
 
@@ -16,7 +16,7 @@ try {
         exit();
     }
 
-    require_once '../controllers/user_controller.php';
+   
 
     $email = $_POST['email'] ?? null;
     $password = $_POST['password'] ?? null;

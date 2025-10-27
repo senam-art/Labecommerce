@@ -1,6 +1,5 @@
 <?php
-require_once '../settings/core.php';
-
+require_once __DIR__ . '/../settings/core.php';
 // Destroy session
 session_unset();
 session_destroy();

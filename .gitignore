@@ -1,0 +1,10 @@
+# Ignore database credentials
+settings/db_cred.php
+
+# Ignore environment files
+.env
+
+# Ignore system files and cache
+.DS_Store
+node_modules/
+vendor/

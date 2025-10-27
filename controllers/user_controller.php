@@ -1,7 +1,7 @@
 <?php
-require_once '../settings/core.php';
+require_once __DIR__ . '/../settings/core.php';
 
-require_once '../classes/user_class.php';
+require_once PROJECT_ROOT . '/classes/user_class.php';
 
 function register_user_ctr($name, $email, $password, $phone_number, $country, $city)
 {

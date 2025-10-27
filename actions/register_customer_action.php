@@ -1,9 +1,12 @@
 <?php
 
 
+require_once __DIR__ . '/../settings/core.php';
+require_once PROJECT_ROOT . '/controllers/user_controller.php';
 header('Content-Type: application/json');
+// session_start() is handled by core.php
 
-session_start();
+
 
 $response = array();
 
@@ -15,7 +18,7 @@ if (isset($_SESSION['user_id'])) {
     exit();
 }
 
-require_once '../controllers/user_controller.php';
+
 
 $name = $_POST['name'];
 $email = $_POST['email'];

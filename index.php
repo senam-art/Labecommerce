@@ -5,10 +5,10 @@ require_once 'settings/core.php';
 
 
 
-// Debugging: print all session variables
-echo '<pre>';
-print_r($_SESSION);
-echo '</pre>';
+// // Debugging: print all session variables
+// echo '<pre>';
+// print_r($_SESSION);
+// echo '</pre>';
 
 
 ?>
@@ -23,22 +23,22 @@ echo '</pre>';
 </head>
 <body>
     <!-- Minimal menu -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="index.php"></a>
-            <div class="d-flex">
-                <?php if (isLoggedIn()): ?>
-                    <!-- Show user info and Logout button if logged in -->
-                    <a href="actions/logout.php" class="btn btn-danger">Logout</a>
-                <?php else: ?>
-                     <!-- Show Register/Login buttons if not logged in -->
-                    <a href="view/register.php" class="btn btn-outline-primary me-2">Register</a>
-                    <a href="view/login.php" class="btn btn-primary">Login</a>
-                <?php endif; ?>
-                    
-            </div>
-        </div>
-    </nav>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <a href="index.php" class="navbar-brand">MyStore</a>
+    <div class="d-flex">
+      <?php if (!isLoggedIn()): ?>
+          <a href="view/register.php" class="btn btn-outline-primary me-2">Register</a>
+          <a href="view/login.php" class="btn btn-primary">Login</a>
+      <?php else: ?>
+          <a href="actions/logout.php" class="btn btn-danger me-2">Logout</a>
+          <?php if (isAdmin()): ?>
+              <a href="view/admin/category.php" class="btn btn-secondary">Category</a>
+          <?php endif; ?>
+      <?php endif; ?>
+    </div>
+  </div>
+</nav>
 
     <div class="container mt-5">
     <?php if (isLoggedIn()): ?> 

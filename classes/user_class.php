@@ -1,6 +1,7 @@
 <?php
 
-require_once '../settings/db_class.php';
+require_once __DIR__ . '/../settings/core.php';
+require_once PROJECT_ROOT . '/settings/db_class.php';
 
 /**
  * 
