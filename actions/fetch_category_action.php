@@ -18,5 +18,10 @@ if (!isLoggedIn()) {
 
 $categories = get_all_categories_ctr();
 
-echo json_encode(['status' => 'success', 'data' => $categories]);
+if ($categories){
+   echo json_encode(['status' => 'success', 'data' => $categories]);
+} else {
+   echo json_encode(['status' => 'fail', 'message' => 'No categories found']);
+}
+?>
 
