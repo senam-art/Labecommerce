@@ -65,7 +65,7 @@ $categories = get_user_categories_ctr($user_id);
         </table>
     </div>
 
-    <!-- JS -->
+    
     
     
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

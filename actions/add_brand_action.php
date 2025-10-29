@@ -5,6 +5,7 @@ ini_set('display_errors', 1);
 require_once __DIR__ . '/../settings/core.php';
 require_once PROJECT_ROOT . '/controllers/brand_controller.php';
 
+requireAdmin();
 requireLogin(); 
 
 header('Content-Type: application/json; charset=UTF-8');

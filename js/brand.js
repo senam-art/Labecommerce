@@ -42,9 +42,9 @@ $(document).ready(function() {
             alert('Failed to load brands.');
         }
     });
-    }
+}
 
-    // ✅ Call it when page loads
+    // Call brands when page loads
     loadBrands();
 
     // Add brand
