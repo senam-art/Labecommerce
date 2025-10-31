@@ -22,14 +22,14 @@ function add_product_ctr($cat_id, $brand_id, $title, $price, $description, $keyw
 //     return $product->delete($product_id);
 // }
 
-// function get_user_products_ctr($user_id) {
-//     $product = new Product();
-//     return $product->get_user_products($user_id);
-// }
+function get_user_products_ctr($user_id) {
+    $product = new Product();
+    return $product->get_user_products($user_id);
+}
 
-// function add_product_image_ctr($product_id, $image_path) {
-//     $product = new Product();
-//     return $product->add_image($product_id, $image_path);
-// }
+function add_product_image_ctr($product_id, $image_path) {
+    $product = new Product();
+    return $product->add_image($product_id, $image_path);
+}
 
 ?>

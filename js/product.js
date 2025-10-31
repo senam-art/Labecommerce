@@ -5,14 +5,14 @@ $(document).ready(function() {
 
     // Show form when button clicked  
     $('#showProductFormBtn').click(function() {  
-        $(this).hide(); // hide the button  
-        $('#productForm').slideDown(); // show the form  
+        $(this).hide();
+        $('#productForm').slideDown();
     });  
 
     // Hide form when cancel button clicked  
     $('#cancelProductFormBtn').click(function() {  
-        $('#productForm').slideUp(); // hide the form  
-        $('#showProductFormBtn').show(); // show the button again  
+        $('#productForm').slideUp();
+        $('#showProductFormBtn').show();
     });  
 
     // Load products
@@ -29,17 +29,22 @@ $(document).ready(function() {
                     console.log('Data:', data);  
 
                     if (data.length > 0) {  
-                        data.forEach((product, i) => {  
+                        data.forEach((product, i) => {
+                            // Get first image or use placeholder
+                            let firstImage = '../../uploads/placeholder.jpg';
+                            if (product.product_images) {
+                                const images = product.product_images.split(',');
+                                firstImage = images[0];
+                            }
+                            
                             rows += `  
                                 <tr>  
                                     <td>${i + 1}</td>  
                                     <td>${product.product_title}</td>  
+                                    <td>$${parseFloat(product.product_price).toFixed(2)}</td>  
                                     <td>${product.cat_name}</td>  
                                     <td>${product.brand_name}</td>  
-                                    <td>${product.product_price}</td>  
-                                    <td>${product.product_desc}</td>  
-                                    <td><img src="${product.product_image}" width="60" height="60" alt="Product"></td>  
-                                    <td>${product.product_keywords}</td>  
+                                    <td><img src="${firstImage}" alt="${product.product_title}" style="width: 50px; height: 50px; object-fit: cover;"></td>  
                                     <td>  
                                         <button class="btn btn-sm btn-warning editBtn" data-id="${product.product_id}">Edit</button>  
                                         <button class="btn btn-sm btn-danger deleteBtn" data-id="${product.product_id}">Delete</button>  
@@ -48,10 +53,9 @@ $(document).ready(function() {
                             `;  
                         });  
                     } else {  
-                        rows = `<tr><td colspan="9" class="text-center">No products found</td></tr>`;  
+                        rows = `<tr><td colspan="7" class="text-center">No products found</td></tr>`;  
                     }  
 
-                    // ✅ FIX: Missing # in selector  
                     $('#productTable').html(rows);  
                 } else {  
                     console.error('Error response:', response);  
@@ -67,9 +71,10 @@ $(document).ready(function() {
         });  
     }  
 
-    // ✅ Load products on page load
+    // Load products on page load
     loadProducts();
 
+    // Submit product form
     $('#productForm').submit(async function(e) {  
         e.preventDefault();  
 
@@ -96,7 +101,7 @@ $(document).ready(function() {
 
                 if (response.status === 'success') {  
                     $('#productForm')[0].reset();  
-                    pond.removeFiles(); // clear FilePond
+                    pond.removeFiles();
                     $('#productForm').slideUp();  
                     $('#showProductFormBtn').show();  
                     loadProducts();  
@@ -108,5 +113,29 @@ $(document).ready(function() {
                 alert('Failed to add product.');  
             }  
         });  
+    });
+
+    // Delete product
+    $(document).on('click', '.deleteBtn', function() {
+        if (!confirm('Are you sure you want to delete this product?')) return;
+        
+        const productId = $(this).data('id');
+        
+        $.ajax({
+            url: '../../actions/delete_product_action.php',
+            type: 'POST',
+            data: { product_id: productId },
+            dataType: 'json',
+            success: function(response) {
+                alert(response.message);
+                if (response.status === 'success') {
+                    loadProducts();
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error deleting product:', error);
+                alert('Failed to delete product.');
+            }
+        });
     });
 });

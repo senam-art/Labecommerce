@@ -11,6 +11,8 @@ require_once PROJECT_ROOT . '/controllers/category_controller.php';
 
 header('Content-Type: application/json');
 
+
+
 if (!isLoggedIn()) {
     echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
     exit;

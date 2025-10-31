@@ -14,7 +14,7 @@ requireAdmin();
 $user_id = getUserId();
 $categories = get_user_categories_ctr($user_id);
 $brands = get_user_brands_ctr($user_id);
-// $products = get_user_products_ctr($user_id);
+
 
 
 ?>
@@ -138,7 +138,9 @@ $brands = get_user_brands_ctr($user_id);
                     <th>Action</th>
                 </tr>
             </thead>
-            <tbody id="productTable"></tbody>
+            <tbody id="productTable">
+                <!-- js will populate -->
+            </tbody>
         </table>
 </div>
 
