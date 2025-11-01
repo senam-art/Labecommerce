@@ -55,6 +55,13 @@ function requireLogin() {
     }
 }
 
+function hasLoggedIn() {
+    if (isLoggedIn()) {
+        header('Location: ' . dirname($_SERVER['PHP_SELF'], 3) . '/index.php');
+        exit;
+    }
+}
+
 /**
  * Forces redirect if user is not admin
  */

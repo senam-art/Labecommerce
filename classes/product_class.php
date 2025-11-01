@@ -3,104 +3,69 @@ require_once __DIR__ . '/../settings/core.php';
 require_once PROJECT_ROOT . '/settings/db_class.php';
 
 class Product extends db_connection {
-    
-    public function add($cat_id, $brand_id, $title, $price, $description, $keywords, $user_id) {
+
+    public function add($product_cat, $product_brand, $product_title, $product_price, $product_desc, $product_keywords, $created_by, $images) {
         // Sanitize inputs
-        $cat_id = intval($cat_id);
-        $brand_id = intval($brand_id);
-        $title = mysqli_real_escape_string($this->db_conn(), trim($title));
-        $price = floatval($price);
-        $description = mysqli_real_escape_string($this->db_conn(), trim($description));
-        $keywords = mysqli_real_escape_string($this->db_conn(), trim($keywords));
-        $user_id = intval($user_id); // Fixed: was $created_by
-        
+        $conn = $this->db_conn(); // use a single connection object
+        $product_cat = intval($product_cat);
+        $product_brand = intval($product_brand);
+        $product_title = mysqli_real_escape_string($conn, trim($product_title));
+        $product_price = floatval($product_price);
+        $product_desc = mysqli_real_escape_string($conn, trim($product_desc));
+        $product_keywords = mysqli_real_escape_string($conn, trim($product_keywords));
+        $created_by = intval($created_by);
+
         // Insert product
         $sql = "INSERT INTO products (product_cat, product_brand, product_title, product_price, product_desc, product_keywords, created_by)
-                VALUES ($cat_id, $brand_id, '$title', $price, '$description', '$keywords', $user_id)"; // Fixed: was '$created_by'
+                VALUES ($product_cat, $product_brand, '$product_title', $product_price, '$product_desc', '$product_keywords', $created_by)";
         
         $result = $this->db_query($sql);
-        
+
         if (!$result) {
-            error_log("Insert failed: $sql | DB Error: " . $this->db_conn()->error);
-            return false;
+            error_log("Insert failed: $sql | DB Error: " . $conn->error);
+            return [
+                'status' => false,
+                'message' => 'Product insert failed.'
+            ];
         }
-        
-        // Return the newly inserted product ID
-        return $this->db_conn()->insert_id;
-    }
-    
-    public function add_product_image($product_id, $image_path) {
-        $product_id = intval($product_id);
-        $image_path = mysqli_real_escape_string($this->db_conn(), $image_path);
-        
-        $sql = "INSERT INTO product_images (product_id, image_path)
-                VALUES ($product_id, '$image_path')";
-        
-        return $this->db_query($sql);
-    }
-    
-    // Get products created by a specific user with images
-    public function get_user_products($user_id) {
-        $user_id = intval($user_id);
-        
-        $sql = "SELECT 
-                    p.product_id,
-                    p.product_title,
-                    p.product_price,
-                    p.product_desc,
-                    p.product_keywords,
-                    p.product_cat,
-                    p.product_brand,
-                    c.cat_name,
-                    b.brand_name,
-                    GROUP_CONCAT(pi.image_path) as product_images
-                FROM products p
-                JOIN categories c ON p.product_cat = c.cat_id
-                JOIN brands b ON p.product_brand = b.brand_id
-                LEFT JOIN product_images pi ON p.product_id = pi.product_id
-                WHERE p.created_by = $user_id
-                GROUP BY p.product_id
-                ORDER BY p.product_id DESC";
-        
-        return $this->db_fetch_all($sql);
-    }
-    
-    // Get all products (admin view)
-    public function get_all_products($user_id) {
-        $user_id = intval($user_id);
-        
-        $sql = "SELECT 
-                    p.product_id,
-                    p.product_title,
-                    p.product_price,
-                    p.product_desc,
-                    p.product_keywords,
-                    p.product_cat,
-                    p.product_brand,
-                    c.cat_name,
-                    b.brand_name,
-                    GROUP_CONCAT(pi.image_path) as product_images
-                FROM products p
-                JOIN categories c ON p.product_cat = c.cat_id
-                JOIN brands b ON p.product_brand = b.brand_id
-                LEFT JOIN product_images pi ON p.product_id = pi.product_id
-                WHERE p.created_by = $user_id
-                GROUP BY p.product_id
-                ORDER BY p.product_id DESC";
-        
-        return $this->db_fetch_all($sql);
-    }
-    
-    public function delete($product_id) {
-        $product_id = intval($product_id);
-        
-        // First delete related images
-        $sql = "DELETE FROM product_images WHERE product_id = $product_id";
-        $this->db_query($sql);
-        
-        // Then delete the product
-        $sql = "DELETE FROM products WHERE product_id = $product_id";
-        return $this->db_query($sql);
+
+        // Get the product_id of the new product
+        $product_id = $conn->insert_id;
+
+        // Handle product images upload
+        $user_folder = PROJECT_ROOT . "/uploads/u$created_by/";
+        $product_folder = $user_folder . "p$product_id/";
+
+        if (!is_dir($product_folder) && !mkdir($product_folder, 0777, true)) {
+            return [
+                'status' => false,
+                'message' => 'Failed to create product upload directory.'
+            ];
+        }
+
+        // Loop through uploaded images
+        $upload_count = 0;
+        foreach ($images['tmp_name'] as $index => $tmp_name) {
+            if ($images['error'][$index] !== UPLOAD_ERR_OK) continue; // skip failed uploads
+            
+            $file_name = time() . '_' . basename($images['name'][$index]);
+            $target_file = $product_folder . $file_name;
+            $relative_path = "uploads/u$created_by/p$product_id/$file_name"; // store relative path in DB
+
+            if (move_uploaded_file($tmp_name, $target_file)) {
+                // Insert image path into product_images
+                $sql_img = "INSERT INTO product_images (product_id, image_path) VALUES ($product_id, '$relative_path')";
+                $this->db_query($sql_img);
+                $upload_count++;
+            } else {
+                error_log("Failed to move uploaded file: $file_name");
+            }
+        }
+
+        return [
+            'status' => true,
+            'message' => "Product added successfully with $upload_count images.",
+            'product_id' => $product_id
+        ];
     }
 }
-?>

@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/../settings/core.php';
+hasLoggedIn();
+?>
 
 <!DOCTYPE html>
 <html lang="en">

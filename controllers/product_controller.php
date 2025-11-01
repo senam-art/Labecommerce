@@ -7,9 +7,9 @@ require_once PROJECT_ROOT . '/classes/product_class.php';
  
 
 
-function add_product_ctr($cat_id, $brand_id, $title, $price, $description, $keywords, $user_id) {
+function add_product_ctr($product_cat, $product_brand, $product_title, $product_price, $product_desc, $product_keywords, $created_by,$images){
     $product = new Product();
-    return $product->add($cat_id, $brand_id, $title, $price, $description, $keywords, $user_id);
+    return $product->add($product_cat, $product_brand, $product_title, $product_price, $product_desc, $product_keywords, $created_by, $images);
 }
 
 // function update_product_ctr($product_id, $cat_id, $brand_id, $title, $price, $description, $image_path, $keywords) {
