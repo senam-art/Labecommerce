@@ -32,4 +32,18 @@ function add_product_image_ctr($product_id, $image_path) {
     return $product->add_image($product_id, $image_path);
 }
 
+function fetch_all_products_ctr() {
+    $product = new Product();
+    return $product->fetch_all_products();
+}
+
+function associate_product_keywords_ctr(int $product_id, array $keywords): bool {
+    $product = new Product();
+    return $product->associateKeywords($product_id, $keywords);
+}
+
+function get_product_keywords_ctr(int $product_id): array {
+    $product = new Product();
+    return $product->getProductKeywords($product_id);
+}
 ?>

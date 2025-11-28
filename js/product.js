@@ -1,141 +1,187 @@
-$(document).ready(function() {  
-    
-    // Hide form initially  
-    $('#productForm').hide();  
+$(document).ready(function() {
+    // // Show/hide product form
+    // $('#showProductFormBtn').click(function() {
+    //     $('#productForm').removeClass('hidden').show();
+    //     $(this).hide();
+    // });
 
-    // Show form when button clicked  
-    $('#showProductFormBtn').click(function() {  
-        $(this).hide();
-        $('#productForm').slideDown();
-    });  
-
-    // Hide form when cancel button clicked  
-    $('#cancelProductFormBtn').click(function() {  
-        $('#productForm').slideUp();
-        $('#showProductFormBtn').show();
-    });  
-
-    // Load products
-    function loadProducts() {  
-        $.ajax({  
-            url: '../../actions/fetch_products_action.php',  
-            type: 'GET',  
-            dataType: 'json',  
-            success: function (response) {  
-                let rows = '';  
-
-                if (response.status === 'success') {  
-                    const data = response.data;  
-                    console.log('Data:', data);  
-
-                    if (data.length > 0) {  
-                        data.forEach((product, i) => {
-                            // Get first image or use placeholder
-                            let firstImage = '../../uploads/placeholder.jpg';
-                            if (product.product_images) {
-                                const images = product.product_images.split(',');
-                                firstImage = images[0];
-                            }
-                            
-                            rows += `  
-                                <tr>  
-                                    <td>${i + 1}</td>  
-                                    <td>${product.product_title}</td>  
-                                    <td>$${parseFloat(product.product_price).toFixed(2)}</td>  
-                                    <td>${product.cat_name}</td>  
-                                    <td>${product.brand_name}</td>  
-                                    <td><img src="${firstImage}" alt="${product.product_title}" style="width: 50px; height: 50px; object-fit: cover;"></td>  
-                                    <td>  
-                                        <button class="btn btn-sm btn-warning editBtn" data-id="${product.product_id}">Edit</button>  
-                                        <button class="btn btn-sm btn-danger deleteBtn" data-id="${product.product_id}">Delete</button>  
-                                    </td>  
-                                </tr>  
-                            `;  
-                        });  
-                    } else {  
-                        rows = `<tr><td colspan="7" class="text-center">No products found</td></tr>`;  
-                    }  
-
-                    $('#productTable').html(rows);  
-                } else {  
-                    console.error('Error response:', response);  
-                    alert(response.message || 'Error: Invalid response format.');  
-                }  
-            },  
-            error: function (xhr, status, error) {  
-                console.error('AJAX Error:', error);  
-                console.error('Response Text:', xhr.responseText);  
-                console.error('Status:', status);  
-                alert('Failed to load products.');  
-            }  
-        });  
-    }  
+    // Modal is handled by Bootstrap (data attributes); no manual open/close needed here.
 
     // Load products on page load
     loadProducts();
 
-    // Submit product form
-    $('#productForm').submit(async function(e) {  
-        e.preventDefault();  
+    // Handle product form submission
+    $('#productForm').submit(function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        // Get keywords from Tagify
+        if (window.keywordTagify) {
+            // Get array of tag values
+            const keywordsArray = window.keywordTagify.value.map(tag => tag.value.trim()).filter(Boolean);
+            
+            // Send as comma-separated string, or JSON if your backend expects it
+            formData.set('keywords', keywordsArray.join(',')); 
+            // OR for JSON: formData.set('keywords', JSON.stringify(keywordsArray));
+        } else {
+            // If Tagify instance is not found, send empty string
+            formData.set('keywords', '');
+        }
+    
+        //--- FILEPOND HANDLING ---
 
-        let formData = new FormData(this);
-
-        // Get FilePond instance and files
         const pond = FilePond.find(document.querySelector('#images'));
-        const files = pond.getFiles();
+        if (pond) {
+            const files = pond.getFiles();
 
-        // Append each file to formData manually
-        files.forEach((file, index) => {
-            formData.append('images[]', file.file); 
-        });
+            // Remove any existing image entries
+            formData.delete('images[]');
 
-        $.ajax({  
-            url: '../../actions/add_product_action.php',  
-            type: 'POST',  
-            data: formData,  
-            contentType: false,  
-            processData: false,  
-            dataType: 'json',  
-            success: function(response) {  
-                alert(response.message);  
+            // Add each file from FilePond
+            files.forEach(fileItem => {
+                formData.append('images[]', fileItem.file);
+            });
+        } else {
+            // Optional: log a warning if FilePond is not initialized
+            console.warn('FilePond instance not found, skipping file upload');
+        }
 
-                if (response.status === 'success') {  
-                    $('#productForm')[0].reset();  
-                    pond.removeFiles();
-                    $('#productForm').slideUp();  
-                    $('#showProductFormBtn').show();  
-                    loadProducts();  
-                }  
-            },  
-            error: function(xhr, status, error) {  
-                console.error('Error adding product:', error);  
-                console.error('Response Text:', xhr.responseText);  
-                alert('Failed to add product.');  
-            }  
-        });  
-    });
-
-    // Delete product
-    $(document).on('click', '.deleteBtn', function() {
-        if (!confirm('Are you sure you want to delete this product?')) return;
-        
-        const productId = $(this).data('id');
-        
         $.ajax({
-            url: '../../actions/delete_product_action.php',
-            type: 'POST',
-            data: { product_id: productId },
-            dataType: 'json',
+            url: '../../actions/add_product_action.php',
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function(response) {
-                alert(response.message);
-                if (response.status === 'success') {
-                    loadProducts();
+                try {
+                    const data = typeof response === 'string' ? JSON.parse(response) : response;
+                    
+                    if (data.status === 'success') {
+                        alert('Product added successfully!');
+                        loadProducts();
+                        resetProductForm();
+                        // Hide bootstrap modal after success
+                        const modalEl = document.getElementById('productModal');
+                        const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                        modalInstance.hide();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                } catch (err) {
+                    console.error('Parse error:', err);
+                    alert('An error occurred while processing the response');
                 }
             },
             error: function(xhr, status, error) {
-                console.error('Error deleting product:', error);
-                alert('Failed to delete product.');
+                console.error('AJAX Error:', error);
+                alert('An error occurred while adding the product');
             }
         });
+    });
+
+    // Load products into table
+    function loadProducts() {
+        $.ajax({
+            url: '../../actions/fetch_products_action.php',
+            method: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                const products = response.data || response;
+                let html = '';
+                
+                if (products.length === 0) {
+                    html = '<tr><td colspan="7" class="text-center">No products found</td></tr>';
+                } else {
+                    products.forEach((product, index) => {
+                        // Get first image or use placeholder
+                        const imageUrl = product.images && product.images.length > 0 
+                            ? product.images[0] 
+                            : 'placeholder.jpg';
+                        
+                        html += `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${escapeHtml(product.product_title)}</td>
+                                <td>$${parseFloat(product.product_price).toFixed(2)}</td>
+                                <td>${escapeHtml(product.cat_name || 'N/A')}</td>
+                                <td>${escapeHtml(product.brand_name || 'N/A')}</td>
+                                <td><img src="${imageUrl}" width="50" height="50" alt="Product"></td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning edit-product" data-id="${product.product_id}">Edit</button>
+                                    <button class="btn btn-sm btn-danger delete-product" data-id="${product.product_id}">Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+                
+                $('#productTable').html(html);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error loading products:', error);
+                $('#productTable').html('<tr><td colspan="7" class="text-center text-danger">Error loading products</td></tr>');
+            }
+        });
+    }
+
+    // Reset product form
+    function resetProductForm() {
+        $('#productForm')[0].reset();
+        
+        // Reset FilePond
+        const pond = FilePond.find(document.querySelector('#images'));
+        if (pond) {
+            pond.removeFiles();
+        }
+        
+        // Reset Tagify
+        if (window.keywordTagify) {
+            window.keywordTagify.removeAllTags();
+        }
+    }
+
+    // Escape HTML to prevent XSS
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text ? text.replace(/[&<>"']/g, m => map[m]) : '';
+    }
+
+    // Handle delete product
+    $(document).on('click', '.delete-product', function() {
+        const productId = $(this).data('id');
+        
+        if (confirm('Are you sure you want to delete this product?')) {
+            $.ajax({
+                url: '../../actions/delete_product_action.php',
+                method: 'POST',
+                data: { product_id: productId },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.status === 'success') {
+                        alert('Product deleted successfully!');
+                        loadProducts();
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while deleting the product');
+                }
+            });
+        }
+    });
+
+    // Handle edit product (implement as needed)
+    $(document).on('click', '.edit-product', function() {
+        const productId = $(this).data('id');
+        // Implement edit functionality
+        alert('Edit functionality for product ID: ' + productId);
     });
 });

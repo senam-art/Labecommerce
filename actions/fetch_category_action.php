@@ -7,16 +7,13 @@ ini_set('display_errors', 1);
 require_once __DIR__ . '/../settings/core.php';
 require_once PROJECT_ROOT . '/controllers/category_controller.php';
 
+requireLogin();
+requireAdmin();
 
 
 header('Content-Type: application/json');
 
 
-
-if (!isLoggedIn()) {
-    echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
-    exit;
-}
 
 $categories = get_all_categories_ctr();
 

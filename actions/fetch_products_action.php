@@ -10,7 +10,7 @@ requireLogin();
 header('Content-Type: application/json');
 
 $user_id = getUserId();
-$products = get_user_products_ctr($user_id);
+$products = fetch_all_products_ctr();
 
 if (!empty($products) && is_array($products)) {
     echo json_encode([
@@ -19,9 +19,9 @@ if (!empty($products) && is_array($products)) {
     ]);
 } else {
     echo json_encode([
-        'status' => 'fail',
-        'message' => 'No brands found'
+        'status' => 'success', // Changed to success with empty data
+        'data' => [],
+        'message' => 'No products found'
     ]);
 }
-
-
+?>
